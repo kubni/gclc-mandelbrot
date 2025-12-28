@@ -28,14 +28,15 @@ def complex_matrix(xmin, xmax, ymin, ymax, pixel_density):
     return re[np.newaxis, :] + im[:, np.newaxis] * 1j
 
 
-def is_stable(c, num_iterations):
+def is_stable(c, max_iterations) -> bool:
     z = 0
-    for _ in range(num_iterations):
+    for _ in range(max_iterations):
         # works even if c is a matrix because of numpy vectorization technique
         z = z**2 + c
+        if abs(z) > 2:
+            return False
 
-    return abs(z) <= 2
-
+    return True
 
 def get_members(c, num_iterations):
     mask = is_stable(c, num_iterations)
@@ -43,7 +44,7 @@ def get_members(c, num_iterations):
 
 
 def main():
-    c = complex_matrix(-2, 0.5, -1.5, 1.5, pixel_density=1000)
+    c = complex_matrix(-2, 0.5, -1.5, 1.5, pixel_density=512)
     members = get_members(c, num_iterations=20)
 
     plt.scatter(members.real, members.imag, color="black", marker=",", s=1)

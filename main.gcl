@@ -1,1 +1,13 @@
+number n 12 
+number c -1 
+number z 0
 
+array zArray {n}
+
+number i 1 
+while { i <= n-1 }
+{
+  set_equal zArray[i] z
+  expression z {z*z + c}
+  expression i {i + 1}
+}
