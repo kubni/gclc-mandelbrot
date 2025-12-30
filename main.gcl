@@ -1,13 +1,38 @@
-number n 12 
-number c -1 
-number z 0
-
-array zArray {n}
-
-number i 1 
-while { i <= n-1 }
+procedure recalculate_step { step start stop density }
 {
-  set_equal zArray[i] z
-  expression z {z*z + c}
-  expression i {i + 1}
+  expression step {(stop - start) / (density - 1)}
 }
+
+number density 5
+number step 0
+
+number xmin -2 
+number xmax 0.5 
+call recalculate_step { step xmin xmax density }
+array real_parts { density }
+number i 0
+while { i < density }
+{
+  expression real_parts[i] { xmin + step * i }
+  expression i { i + 1 }
+}
+
+number ymin -1.5
+number ymax 1.5
+call recalculate_step { step ymin ymax density }
+array imaginary_parts { density }
+number j 0
+while { j < density }
+{
+  expression imaginary_parts[j] { ymin + step * j }
+  expression j { j + 1 }
+}
+
+# array point_sequence { density }
+# 
+# number k 0
+# while { k < density }
+# {
+#   
+#   expression k { k + 1 }
+# }

@@ -38,6 +38,7 @@ def is_stable(c, max_iterations) -> bool:
 
     return True
 
+
 def get_members(c, num_iterations):
     mask = is_stable(c, num_iterations)
     return c[mask]
