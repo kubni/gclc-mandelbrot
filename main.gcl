@@ -1,5 +1,6 @@
 background 200 0 0
 dim 150 100
+area -2 -1.5 0.5 1.5
 
 number density 50
 number xmin -2 
@@ -45,36 +46,36 @@ while { k <= density }
     point acc_point 0 0
     while { l <= max_iterations }
     {
+       getx a_re acc_point
+       gety a_im acc_point
+       getx b_re acc_point
+       gety b_im acc_point
+       expression re_part { a_re * b_re - a_im * b_im }
+       expression im_part { a_re * b_im + a_im * b_re }
+       point tmp_point re_part im_part
+       set_equal acc_point tmp_point
+
+       getx a_re acc_point
+       gety a_im acc_point 
+       getx b_re C[k][f]
+       gety b_im C[k][f]
+       expression re_part { a_re + b_re }
+       expression im_part { a_im + b_im }
+       point tmp_point re_part im_part
+       set_equal acc_point tmp_point
 
        getx re acc_point
        gety im acc_point
        expression tmp_abs {sqrt(re*re+im*im)} 
-       if_then_else { tmp_abs <= 2 }
+
+       % Ukoliko predjemo 2, prekidamo petlju ranije
+       if_then_else { tmp_abs > 2 }
        {
-        getx a_re acc_point
-        gety a_im acc_point
-        getx b_re acc_point
-        gety b_im acc_point
-        expression re_part { a_re * b_re - a_im * b_im }
-        expression im_part { a_re * b_im + a_im * b_re }
-        point tmp_point re_part im_part
-        set_equal acc_point tmp_point
-
-        getx a_re acc_point
-        gety a_im acc_point 
-        getx b_re C[k][f]
-        gety b_im C[k][f]
-        expression re_part { a_re + b_re }
-        expression im_part { a_im + b_im }
-        point tmp_point re_part im_part
-        set_equal acc_point tmp_point
-
-        expression mask_array[k][f] {1}
+         expression mask_array[k][f] {-1} 
+         expression l { max_iterations + 1 }
        }
        {
-        expression mask_array[k][f] {0} 
        }
-      
        expression l { l + 1 }
     }
     expression f { f + 1 }
@@ -83,14 +84,14 @@ while { k <= density }
 }
 
 
-% Crtanje tacaka
+% Crtanje tacaka, crtamo samo one koje su ostale 0 u mask_array
 number i 1
 while { i <= density }
 {
   number j 1
   while { j <= density }
   {
-    if_then_else { mask_array[i][j] == 1 }
+    if_then_else { mask_array[i][j] == 0 }
     {
       drawpoint C[i][j] 
     }
