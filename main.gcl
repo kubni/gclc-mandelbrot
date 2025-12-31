@@ -1,10 +1,12 @@
-number density 5
+number density 10
 number xmin -2 
 number xmax 0.5 
 number ymin -1.5
 number ymax 1.5
 
-array M { density density }
+expression todo { (xmax - xmin) * density }
+
+array C { density density }
 number i 1
 while { i <= density }
 {
@@ -17,8 +19,75 @@ while { i <= density }
     expression y_step {(ymax - ymin) / (density - 1)}
     expression im_coord { ymin + y_step * (j-1) }
     point P re_coord im_coord
-    set_equal M[i][j] P
+    set_equal C[i][j] P
     expression j { j + 1 }
   }
   expression i { i + 1 }
+}
+
+procedure complex_add { acc_point point_a point_b }
+{
+  getx a_re point_a
+  gety a_im point_a
+  getx b_re point_b
+  gety b_im point_b
+  expression re_part { a_re + b_re }
+  expression im_part { a_im + b_im }
+  point tmp_point re_part im_part
+  set_equal acc_point tmp_point
+}
+
+procedure complex_mul { acc_point point_a point_b }
+{
+  getx a_re point_a
+  gety a_im point_a
+  getx b_re point_b
+  gety b_im point_b
+  expression re_part { a_re * b_re - a_im * b_im }
+  expression im_part { a_re * b_im + a_im * b_re }
+  point tmp_point re_part im_part
+  set_equal acc_point tmp_point
+}
+
+procedure complex_abs { acc p }
+{
+  number re 0
+  number im 0
+  getx re p
+  gety im p
+  expression acc { sqrt(re*re+im*im) }
+}
+
+array mask_array { density density }
+number max_iterations 10
+number k 1
+while { k <= density }
+{
+  number f 1
+  while { f <= density }
+  {
+    number l 1 
+    point acc_point 0 0
+    while { l <= max_iterations }
+    {
+      point z_point 0 0
+      set_equal z_point acc_point 
+      call complex_mul { acc_point z_point z_point }
+      call complex_add { acc_point acc_point C[k][f] }
+      number tmp_abs 0
+      call complex_abs { tmp_abs acc_point }
+      point T tmp_abs tmp_abs
+      if_then_else { tmp_abs <= 2 }
+      {
+        expression mask_array[k][f] {1}
+      }
+      {
+        expression mask_array[k][f] {0}
+      }
+      
+      expression l { l + 1 }
+    }
+    expression f { f + 1 }
+  }
+  expression k { k + 1 }
 }
