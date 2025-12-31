@@ -1,11 +1,14 @@
-number density 10
+background 200 0 0
+dim 150 100
+
+number density 50
 number xmin -2 
 number xmax 0.5 
 number ymin -1.5
 number ymax 1.5
 
-expression todo { (xmax - xmin) * density }
-
+% Kreiramo tacaka cije su x i y koordinate jednako rasporedjene u opsegu [xmin, ..., xmax] i [ymin, ..., ymax]
+% Broj tacaka je odredjen sa density
 array C { density density }
 number i 1
 while { i <= density }
@@ -25,41 +28,13 @@ while { i <= density }
   expression i { i + 1 }
 }
 
-procedure complex_add { acc_point point_a point_b }
-{
-  getx a_re point_a
-  gety a_im point_a
-  getx b_re point_b
-  gety b_im point_b
-  expression re_part { a_re + b_re }
-  expression im_part { a_im + b_im }
-  point tmp_point re_part im_part
-  set_equal acc_point tmp_point
-}
-
-procedure complex_mul { acc_point point_a point_b }
-{
-  getx a_re point_a
-  gety a_im point_a
-  getx b_re point_b
-  gety b_im point_b
-  expression re_part { a_re * b_re - a_im * b_im }
-  expression im_part { a_re * b_im + a_im * b_re }
-  point tmp_point re_part im_part
-  set_equal acc_point tmp_point
-}
-
-procedure complex_abs { acc p }
-{
-  number re 0
-  number im 0
-  getx re p
-  gety im p
-  expression acc { sqrt(re*re+im*im) }
-}
-
+% Kreiramo masku, matricu koja odredjuje koja tacka iz C ce biti iscrtana kasnije.
+% Postoji tacka acc_point koja se koristi za dobijanje elemenata niza po formuli:
+% z_0 = 0
+% z_n = z^2_{n-1} + c
+% Racunamo samo dok je abs(z) <= 2 jer je to zadat uslov.
 array mask_array { density density }
-number max_iterations 10
+number max_iterations 20
 number k 1
 while { k <= density }
 {
@@ -70,24 +45,59 @@ while { k <= density }
     point acc_point 0 0
     while { l <= max_iterations }
     {
-      point z_point 0 0
-      set_equal z_point acc_point 
-      call complex_mul { acc_point z_point z_point }
-      call complex_add { acc_point acc_point C[k][f] }
-      number tmp_abs 0
-      call complex_abs { tmp_abs acc_point }
-      point T tmp_abs tmp_abs
-      if_then_else { tmp_abs <= 2 }
-      {
+
+       getx re acc_point
+       gety im acc_point
+       expression tmp_abs {sqrt(re*re+im*im)} 
+       if_then_else { tmp_abs <= 2 }
+       {
+        getx a_re acc_point
+        gety a_im acc_point
+        getx b_re acc_point
+        gety b_im acc_point
+        expression re_part { a_re * b_re - a_im * b_im }
+        expression im_part { a_re * b_im + a_im * b_re }
+        point tmp_point re_part im_part
+        set_equal acc_point tmp_point
+
+        getx a_re acc_point
+        gety a_im acc_point 
+        getx b_re C[k][f]
+        gety b_im C[k][f]
+        expression re_part { a_re + b_re }
+        expression im_part { a_im + b_im }
+        point tmp_point re_part im_part
+        set_equal acc_point tmp_point
+
         expression mask_array[k][f] {1}
-      }
-      {
-        expression mask_array[k][f] {0}
-      }
+       }
+       {
+        expression mask_array[k][f] {0} 
+       }
       
-      expression l { l + 1 }
+       expression l { l + 1 }
     }
     expression f { f + 1 }
   }
   expression k { k + 1 }
+}
+
+
+% Crtanje tacaka
+number i 1
+while { i <= density }
+{
+  number j 1
+  while { j <= density }
+  {
+    if_then_else { mask_array[i][j] == 1 }
+    {
+      drawpoint C[i][j] 
+    }
+    {
+    }
+    expression j { j + 1 }
+  }
+
+  expression i { i + 1 }
 }

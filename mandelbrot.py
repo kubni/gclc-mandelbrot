@@ -5,20 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def z_rec(n, c):
-    if n == 0:
-        return 0
-    else:
-        return z_rec(n - 1, c) ** 2 + c
-
-
-def z_lazy(c):
-    z = 0
-    while True:
-        yield z
-        z = z**2 + c
-
-
 def complex_matrix(xmin, xmax, ymin, ymax, pixel_density):
 
     re = np.linspace(xmin, xmax, int((xmax - xmin) * pixel_density))
@@ -28,15 +14,13 @@ def complex_matrix(xmin, xmax, ymin, ymax, pixel_density):
     return re[np.newaxis, :] + im[:, np.newaxis] * 1j
 
 
-def is_stable(c, max_iterations) -> bool:
+def is_stable(c, num_iterations):
     z = 0
-    for _ in range(max_iterations):
-        # works even if c is a matrix because of numpy vectorization technique
+    for _ in range(num_iterations):
+        # works even if c is a matrix because of numpy tricks
         z = z**2 + c
-        if abs(z) > 2:
-            return False
 
-    return True
+    return abs(z) <= 2
 
 
 def get_members(c, num_iterations):
